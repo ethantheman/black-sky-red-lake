@@ -17,79 +17,76 @@
 	Your checksum would be 3004.
 */
 
-let containsAnagrams = (row) => {
-	// return whether any two elements are anagrams
-	// brute force: try each combination, with possibility to return true early if match found.
-	for ( var i = 0; i < row.length - 1; i++ ) {
-		for ( var j = i + 1; j < row.length; j++ ) {
-			let flag = true;
-			// anagrams must be the same length
-			if ( row[i].length === row[j].length ) {
-				// count occurrences of characters in first string
-				let chars = {};
-				for ( var c = 0; c < row[i].length; c++ ) {
-					if ( chars[c] === undefined ) {
-						chars[c] = 1;
-					} else {
-						chars[c]++;
-					}
-				}
+/* 
+	containsAnagrams works by sorting the digits inside each element,
+	and storing the result in a hashmap if it doesn't exist in the hashmap yet.
+	if any duplicate keys are found, an anagram exists.
 
-				// check against characters in second string
-				for ( c = 0; c < row[j].length; c++ ) {
-					if ( chars[c] === undefined || chars[c] === 0 ) {
-						flag = false;
-					} else {
-						chars[c]--;
-					}
-				}
-				if ( flag ) {
-					return true;
-				}
-			}
+	this can also be done without the hashmap by sorting the digits in each element,
+	then sorting the entire row and checking for duplicate using a 'candidate' variable.
+*/
+let containsAnagrams = (row) => {
+	let nums = {};
+
+	for ( let i = 0; i < row.length; i++ ) {
+		// sort the digits inside each element:
+		let key = row[i].split('').sort((a, b) => parseInt(a) - parseInt(b)).join('');
+		if ( nums[key] !== undefined ) {
+			// duplicate key was found, therefore an anagram exists:
+			return true;
+		} else {
+			nums[key] = true;
 		}
 	}
+	// if we reach this point, no anagram exists in this row:
 	return false;
 }
 
 let divCheck = (row) => {
-	// return whether any two elements can divide to 177
-	// brute force: try each combination, with possibility to return true early if match found.
-	for ( var i = 0; i < row.length-1; i++ ) {
-		for ( var j = i + 1; j < row.length; j++ ) {
-			if ( parseInt(row[i]) / parseInt(row[j]) === 177 || parseInt(row[j]) / parseInt(row[i]) === 177 ) {
-				return true;
-			}
+	// since the row is sorted, we can use two pointers to check for the condition:
+	let a = 0, b = row.length - 1, flag = false;
+	while ( b > a && flag === false ) {
+		if ( row[b] / row[a] < 177 ) {
+			a++;
+		} else if ( row[b] / row[a] > 177 ) {
+			b--;
+		} else if ( row[b] / row[a] === 177 ) {
+			flag = true;
 		}
 	}
-	return false;
+	return flag;
 }
 
 let checkSum = (data) => {
-	let sum = 0, max, min;
+	let sum = 0;
 	data.forEach(row => {
-		// reset min and max. all elements will be >= 1, so max can be 0 to start.
-		max = 0;
-		min = Number.POSITIVE_INFINITY;
-
-		if ( !containsAnagrams(row) && !divCheck(row) ) {
-			// calculate the min and max, add diff to sum
-			row.forEach(el => {
-				// each array element is a string representing an integer >= 1.
-				if ( parseInt(el) < min ) {
-					min = parseInt(el);
-				}
-				if ( parseInt(el) > max ) {
-					max = parseInt(el);
-				}
-			});
-			sum += max - min;
+		// sort the row before calling helper functions
+		let sortedRow = row.sort((a, b) => parseInt(a) - parseInt(b));
+		if ( !containsAnagrams(row) && !divCheck(sortedRow) ) {
+			// since row is sorted:
+			sum += sortedRow[row.length - 1] - sortedRow[0];
 		}
 	});
 
 	return sum;
 }
 
-console.log(checkSum([[1, 2, 3, 4, 5], [3001, 4, 1, 9, 500]]));
-console.log(divCheck(["500", "354", "50", "2", "99"]));
-console.log(containsAnagrams([100, 150, 215, 80, 153])); // broken!
+let assert = (condition, description) => {
+	if ( condition ) {
+		console.log('test passed.')
+	} else {
+		console.log('test failed: ', description);
+	}
+}
+
+let testData = [
+	["1", "2", "3", "4", "5"], 
+	["100", "150", "215", "80", "152"], 
+	["500", "354", "50", "2", "99"],
+	["3001", "4", "1", "9", "500"]
+];
+
+assert(containsAnagrams(testData[1]) === true, "it should identify numerical anagrams");
+assert(containsAnagrams(testData[0]) === false, "it should return false when there are no anagrams.");
+assert(divCheck(testData[2].sort((a, b) => parseInt(a) - parseInt(b))) === true, "it should identify numbers that divide to 177");
+assert(checkSum(testData) === 3004, "it should calculate the sum correctly");
