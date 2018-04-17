@@ -1,22 +1,3 @@
-/*
-	For each list or set, collect all the items (each item will be an integer (>= 1) 
-	represented as a string) into an array and run the following analysis:
-	Scan the array for any numerical anagrams (123 is a numerical anagram of 321, as is 212 of 221). 
-	If it contains any numerical anagrams, skip this array and continue to the next.
-	If any two numbers in the array can be divided together to equal 177, skip this array and continue to the next.
-	Otherwise, find the difference between the maximum value in the array and the minimum value. 
-	Store this result.
-	Sum the differences collected above. This is your checksum.
-
-	ex. If the arrays extracted from Redis were:
-
-	[1, 2, 3, 4, 5] // diff: 5 - 1 = 4
-	[100, 150, 215, 80, 152] // skipped, 215 and 152 are numerical anagrams
-	[500, 354, 50, 2, 99] // skipped, 354 / 2 = 177
-	[3001, 4, 1, 9, 500] // diff: 3001 - 1 = 3000
-	Your checksum would be 3004.
-*/
-
 let containsAnagrams = row => {
 	// copy the row to avoid mutating the input
 	let copy = row.slice();
@@ -62,8 +43,7 @@ let checkSum = data => {
 	let sum = 0;
 	data.forEach(row => {
 		// sort the row before calling helper functions
-		let sortedRow = row.slice();
-		sortedRow.sort((a, b) => parseInt(a) - parseInt(b));
+		let sortedRow = row.slice().sort((a, b) => parseInt(a) - parseInt(b));
 		if (!containsAnagrams(row) && !divCheck(sortedRow)) {
 			// since row is sorted:
 			sum += sortedRow[sortedRow.length - 1] - sortedRow[0];
@@ -72,6 +52,7 @@ let checkSum = data => {
 
 	return sum;
 };
+
 
 let assert = (condition, description) => {
 	if (condition) {
@@ -102,3 +83,4 @@ assert(
 	"it should identify numbers that divide to 177"
 );
 assert(checkSum(testData) === 3004, "it should calculate the sum correctly");
+module.exports.checkSum = checkSum;

@@ -15,6 +15,7 @@ client.multi()
     for (const key of replies[1]) {
       assert(/^[0-9a-f]{64}$/.test(key), `Key is not a 64-char hexadecimal: ${key}`);
     }
+    console.log(replies[0]);
     console.log('DB has been verified!');
     client.quit();
   });

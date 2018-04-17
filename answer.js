@@ -1,7 +1,9 @@
 'use strict';
 
 const http = require('http');
+
 const bcrypt = require('bcryptjs');
+const processData = require('connection.js').processData;
 
 const server = http.createServer((req, res) => {
   const input = req.url.replace(/[^\d]/g, '');
@@ -17,4 +19,10 @@ const server = http.createServer((req, res) => {
 server.listen(3000, err => {
   if (err) throw err;
   console.log('Answer server listening on port 3000');
+  // call connection function here
+  processData((sum) => {
+    http.get(`http://answer:3000/${sum}`).then(response => {
+      console.log('response: ', response);
+    });
+  });
 });

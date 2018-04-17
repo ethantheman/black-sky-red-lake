@@ -9,10 +9,14 @@
   },
   "author": "Greg Walden <greg.walden@makerbot.com>",
   "license": "UNLICENSED",
+  "scripts": {
+    "start": "node answer.js"
+  },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "bluebird": "^3.5.1",
     "lodash": "^4.17.4",
-    "redis": "^2.8.0"
+    "redis": "^2.8.0",
+    "redis-cli": "^1.0.2"
   }
 }
