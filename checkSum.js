@@ -1,7 +1,7 @@
 /*
 	This file connects to the redis database, reads all the keys, calculates
 	the checkSum, and sends the result to the answer server. The main function 
-	is called driver - it begins on line 18 and is invoked on line 137.
+	is called driver - it begins on line 18 and is invoked on line 152.
 */
 
 const redis = require("redis");
@@ -115,8 +115,8 @@ let divCheck = row => {
 		set[row[i]] = true;
 	}
 
-	for (var key in set) {
-		if (key * 177 > max) {
+	for ( i = 0; i < row.length; i++ ) {
+		if (row[i] * 177 > max) {
 			return false;
 		} else if (set[key * 177] !== undefined) {
 			// a match exists:
