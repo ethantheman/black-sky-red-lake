@@ -19,78 +19,47 @@
 
 const redis = require("redis");
 const bluebird = require('bluebird');
+const http = require('http');
 const client = redis.createClient("http://redis");
 client.on("connect", () => console.log("connected successfully to redis!"));
 client.on("error", err => console.log("redis connection error: ", err));
 
 bluebird.promisifyAll(client); // allows for chaining of .then and .catch
-
 client.keysAsync('*')
 .then(keys => {
-	let sum = 0;
+	let sum = 0, count = 0;
 	keys.forEach(key => {
 		client.typeAsync(key).then(type => {
 			if ( type === 'list' ) {
 				client.llenAsync(key).then(l => {
 					client.lrangeAsync(key, 0, l).then(arr => {
-						data.push(arr);
-						if ( data.length === keys.length ) {
-							console.log('donezo!', data);
-						} else {
-							console.log('not yet');
+						sum += checkSum(arr);
+						count++;
+						if ( count === keys.length ) {
+							http.get(`http://answer:3000/${sum}`, res => {
+								console.log('response: ', res.statusCode);
+							})
 						}
 					}).catch(e => console.log('lrange error: ', e));
 				}).catch(e => console.log('llen error', e));
 			} else if ( type === 'set' ) {
 				client.smembersAsync(key).then(arr => {
-					data.push(arr);
-					if ( data.length === keys.length ) {
-						console.log('donezo!!', data);
-					} else {
-						console.log('not yet');
+					sum += checkSum(arr);
+					count++;
+					if ( count === keys.length ) {
+						http.get(`http://answer:3000/${sum}`, res => {
+							console.log('response: ', res.statusCode);
+						});
 					}
 				}).catch(e => console.log('smembers error: ', e));
+			} else {
+				console.log('something unexpected happened!');
 			}
 		}).catch(e => {
 			console.log('error getting type of key: ', e);
 		})
 	})
 }).catch(e => console.log(e));
-
-// client.keys('*', (err, replies) => {
-// 	if ( err ) {
-// 		console.log('client keys error: ', err);
-// 	} else {
-// 		let data = [];
-// 		replies.forEach(key => {
-// 			client.type(key, (err, res) => {
-// 				if ( err ) throw err;
-// 				console.log('type of key', key, ': ', res);
-// 				if ( res === "set" ) {
-// 					console.log('do something with the set')
-// 					data.push(res);
-// 					if ( data.length === 500 ) {
-// 						console.log('all done! time to call checkSum on the data.');
-// 					} else {
-// 						console.log('not yet!');
-// 					}
-// 				} else if ( res === "list" ) {
-// 					client.llen(key, (err, length) => {
-
-// 					});
-// 					// let a = client.lrange(key, 0, len);
-// 					console.log('key: ', key, 'len: ', len);
-// 					data.push(res);
-// 					if ( data.length === 500 ) {
-// 						console.log('all done! time to call checkSum on the data.');
-// 					} else {
-// 						console.log('not yet!');
-// 					}
-// 				}
-// 			});
-// 		})
-// 	}
-// });
 
 /*
 * @param {array} row - an array of strings representing numbers in a row of data
@@ -102,11 +71,13 @@ let containsAnagrams = row => {
 	let copy = row.slice();
 	for (var i = 0; i < copy.length; i++) {
 		// sort the digits inside each number so anagrams will appear as the same number
+		// EDGE CASE: LEADING ZEROS AFTER SORTING - must sort digits from 9 to 0, not 0 to 9!
 		let key = copy[i]
 			.split("")
-			.sort((a, b) => parseInt(a) - parseInt(b))
+			.sort((a, b) => parseInt(b) - parseInt(a))
 			.join("");
 		copy[i] = parseInt(key);
+		console.log(copy[i]);
 	}
 
 	// sort the entire array so any anagrams will be adjacent
@@ -116,6 +87,7 @@ let containsAnagrams = row => {
 	let candidate = copy[0];
 	for (i = 1; i < copy.length; i++) {
 		if (copy[i] === candidate) {
+			console.log('skipping because of ', copy[i]);
 			return true;
 		} else {
 			candidate = copy[i];
@@ -139,6 +111,7 @@ let divCheck = row => {
 		} else if (row[b] / row[a] > 177) {
 			b--;
 		} else if (row[b] / row[a] === 177) {
+			console.log('skipped because of: ', a, b);
 			flag = true;
 		}
 	}
@@ -153,41 +126,18 @@ let checkSum = row => {
 	let sum = 0;
 	// data.forEach(row => {
 		// sort the row before calling divCheck
-		let sortedRow = row.slice().sort((a, b) => parseInt(a) - parseInt(b));
-		if (!containsAnagrams(row) && !divCheck(sortedRow)) {
-			// min/max will be first and last elements in sortedRow
-			sum += sortedRow[sortedRow.length - 1] - sortedRow[0];
-		}
+	let sortedRow = row.slice().sort((a, b) => parseInt(a) - parseInt(b));
+
+	if (!containsAnagrams(row) && !divCheck(sortedRow)) {
+		// min/max will be first and last elements in sortedRow
+		sum += sortedRow[sortedRow.length - 1] - sortedRow[0];
+	}
 	// });
 	return sum;
 };
 
-// let assert = (condition, description) => {
-// 	if (condition) {
-// 		console.log("test passed!!!");
-// 	} else {
-// 		console.log("test failed: ", description);
-// 	}
-// };
-
-// let testData = [
-// 	["1", "2", "3", "4", "5"],
-// 	["100", "150", "215", "80", "152"],
-// 	["500", "354", "50", "2", "99"],
-// 	["3001", "4", "1", "9", "500"]
-// ];
-
-// assert(
-// 	containsAnagrams(testData[1]) === true,
-// 	"it should identify numerical anagrams"
-// );
-// assert(
-// 	containsAnagrams(testData[0]) === false,
-// 	"it should return false when there are no anagrams."
-// );
-// assert(
-// 	divCheck(testData[2].slice().sort((a, b) => parseInt(a) - parseInt(b))) ===
-// 		true,
-// 	"it should identify numbers that divide to 177"
-// );
-// assert(checkSum(testData) === 3004, "it should calculate the sum correctly");
+module.exports = {
+	checkSum: checkSum,
+	divCheck: divCheck,
+	containsAnagrams: containsAnagrams
+};

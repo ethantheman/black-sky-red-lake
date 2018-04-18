@@ -9,8 +9,6 @@ services:
     links:
       - redis
       - answer
-    ports:
-      - 8080:6379
 
   # A simple HTTP server to verify the checksum is correct
   answer:
