@@ -60,6 +60,8 @@ client.keysAsync('*')
 			} else {
 				console.log('something unexpected happened!');
 			}
+			// move the http.get('answer...') to here instead of writing it twice
+			// factor out set/list code into function
 		}).catch(e => {
 			console.log('error getting type of key: ', e);
 		})
@@ -72,6 +74,7 @@ client.keysAsync('*')
 */
 
 let containsAnagrams = row => {
+	// use an object to return early
 	// copy the row to avoid mutating the input
 	let copy = row.slice();
 	for (var i = 0; i < copy.length; i++) {
@@ -104,15 +107,32 @@ let containsAnagrams = row => {
 * @return {boolean} - whether any two elements in the array can be divided to equal 177
 */
 let divCheck = row => {
+	// put numbers into a set, loop over it once, check if element[i] * 177 exists in set
+		// if yes, return true
+		// if element[i] * 177 > maximum, return false
+		// else i++
 	// since the row is sorted, we can use two pointers to scan the array outside-in:
-	let a = 0,
-		b = row.length - 1
-	while (b > a) {
-		if (row[b] / row[a] < 177) {
-			a++;
-		} else if (row[b] / row[a] > 177) {
-			b--;
-		} else if (row[b] / row[a] === 177) {
+	// let a = 0,
+	// 	b = row.length - 1
+	// while (b > a) {
+	// 	if (row[b] / row[a] < 177) {
+	// 		a++;
+	// 	} else if (row[b] / row[a] > 177) {
+	// 		b--;
+	// 	} else if (row[b] / row[a] === 177) {
+	// 		return true;
+	// 	}
+	// }
+	// return false;
+	let set = {};
+	for ( var i = 0; i < row.length; i++ ) {
+		set[row[i]] = true;
+	}
+
+	for ( var i = 0; i < row.length; i++ ) {
+		if ( row[i] * 177 > row[row.length - 1] ) {
+			return false;
+		} else if ( set[row[i] * 177] !== undefined ) {
 			return true;
 		}
 	}
@@ -121,11 +141,12 @@ let divCheck = row => {
 
 /*
 * @param {array} row - a single row from the redis database
-* @return {Number} sum - the checkSum calculated after processing every row
+* @return {Number} sum - the checkSum calculated after processing the row
 */
 let checkSum = row => {
 	let sum = 0;
-	// data.forEach(row => {
+	// check for anagrams before sorting since doesn't take sorted array as input
+
 	// sort the row before calling divCheck
 	let sortedRow = row.slice().sort((a, b) => parseInt(a) - parseInt(b));
 
@@ -133,7 +154,6 @@ let checkSum = row => {
 		// min/max will be first and last elements in sortedRow
 		sum += sortedRow[sortedRow.length - 1] - sortedRow[0];
 	}
-	// });
 	return sum;
 };
 
