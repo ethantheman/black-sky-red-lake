@@ -118,7 +118,7 @@ let divCheck = row => {
 	for ( i = 0; i < row.length; i++ ) {
 		if (row[i] * 177 > max) {
 			return false;
-		} else if (set[key * 177] !== undefined) {
+		} else if (set[row[i] * 177] !== undefined) {
 			// a match exists:
 			return true;
 		}
