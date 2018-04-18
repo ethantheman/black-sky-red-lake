@@ -94,20 +94,6 @@ let containsAnagrams = row => {
 	}
 
 	return false;
-
-	// // sort the entire array so any anagrams will be adjacent
-	// // and therefore identifiable in a single pass over the array
-	// copy.sort((a, b) => a - b);
-
-	// let candidate = copy[0];
-	// for (i = 1; i < copy.length; i++) {
-	// 	if (copy[i] === candidate) {
-	// 		return true;
-	// 	} else {
-	// 		candidate = copy[i];
-	// 	}
-	// }
-	// return false;
 };
 
 /*
@@ -119,15 +105,15 @@ let divCheck = row => {
 		// if yes, return true
 		// if element[i] * 177 > maximum, return false
 		// else i++
-	let set = {};
+	let set = {}, max = row[row.length - 1];
 	for ( var i = 0; i < row.length; i++ ) {
 		set[row[i]] = true;
 	}
 
-	for ( var i = 0; i < row.length; i++ ) {
-		if ( row[i] * 177 > row[row.length - 1] ) {
+	for ( var key in set ) {
+		if ( key * 177 > max ) {
 			return false;
-		} else if ( set[row[i] * 177] !== undefined ) {
+		} else if ( set[key * 177] !== undefined ) {
 			return true;
 		}
 	}
@@ -139,17 +125,19 @@ let divCheck = row => {
 * @return {Number} sum - the checkSum calculated after processing the row
 */
 let checkSum = row => {
-	let sum = 0;
+	// first create a set to pass into containsAnagrams
 	// check for anagrams before sorting since doesn't take sorted array as input
-
+	if ( containsAnagrams(row) ) {
+		return 0;
+	}
 	// sort the row before calling divCheck
 	let sortedRow = row.slice().sort((a, b) => parseInt(a) - parseInt(b));
 
-	if (!containsAnagrams(row) && !divCheck(sortedRow)) {
+	if (!divCheck(sortedRow)) {
 		// min/max will be first and last elements in sortedRow
-		sum += sortedRow[sortedRow.length - 1] - sortedRow[0];
+		return sortedRow[sortedRow.length - 1] - sortedRow[0];
 	}
-	return sum;
+	return 0;
 };
 
 module.exports = {
