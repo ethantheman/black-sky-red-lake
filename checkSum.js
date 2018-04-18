@@ -25,6 +25,9 @@ client.on("connect", () => console.log("connected successfully to redis!"));
 client.on("error", err => console.log("redis connection error: ", err));
 
 bluebird.promisifyAll(client); // allows for chaining of .then and .catch
+
+let startTime = Date.now();
+
 client.keysAsync('*')
 .then(keys => {
 	let sum = 0, count = 0;
@@ -38,7 +41,8 @@ client.keysAsync('*')
 						if ( count === keys.length ) {
 							http.get(`http://answer:3000/${sum}`, res => {
 								console.log('response: ', res.statusCode);
-							})
+								console.log('finished in: ', Date.now() - startTime, 'ms');
+							});
 						}
 					}).catch(e => console.log('lrange error: ', e));
 				}).catch(e => console.log('llen error', e));
@@ -49,6 +53,7 @@ client.keysAsync('*')
 					if ( count === keys.length ) {
 						http.get(`http://answer:3000/${sum}`, res => {
 							console.log('response: ', res.statusCode);
+							console.log('finished in: ', Date.now() - startTime, 'ms');
 						});
 					}
 				}).catch(e => console.log('smembers error: ', e));
@@ -74,10 +79,9 @@ let containsAnagrams = row => {
 		// EDGE CASE: LEADING ZEROS AFTER SORTING - must sort digits from 9 to 0, not 0 to 9!
 		let key = copy[i]
 			.split("")
-			.sort((a, b) => parseInt(b) - parseInt(a))
+			.sort((a, b) => b - a)
 			.join("");
 		copy[i] = parseInt(key);
-		console.log(copy[i]);
 	}
 
 	// sort the entire array so any anagrams will be adjacent
@@ -87,7 +91,6 @@ let containsAnagrams = row => {
 	let candidate = copy[0];
 	for (i = 1; i < copy.length; i++) {
 		if (copy[i] === candidate) {
-			console.log('skipping because of ', copy[i]);
 			return true;
 		} else {
 			candidate = copy[i];
@@ -103,19 +106,17 @@ let containsAnagrams = row => {
 let divCheck = row => {
 	// since the row is sorted, we can use two pointers to scan the array outside-in:
 	let a = 0,
-		b = row.length - 1,
-		flag = false;
-	while (b > a && flag === false) {
+		b = row.length - 1
+	while (b > a) {
 		if (row[b] / row[a] < 177) {
 			a++;
 		} else if (row[b] / row[a] > 177) {
 			b--;
 		} else if (row[b] / row[a] === 177) {
-			console.log('skipped because of: ', a, b);
-			flag = true;
+			return true;
 		}
 	}
-	return flag;
+	return false;
 };
 
 /*
@@ -125,7 +126,7 @@ let divCheck = row => {
 let checkSum = row => {
 	let sum = 0;
 	// data.forEach(row => {
-		// sort the row before calling divCheck
+	// sort the row before calling divCheck
 	let sortedRow = row.slice().sort((a, b) => parseInt(a) - parseInt(b));
 
 	if (!containsAnagrams(row) && !divCheck(sortedRow)) {

@@ -8,12 +8,7 @@ let assert = (condition, description) => {
 	}
 };
 
-let testData = [
-	["1", "2", "3", "4", "5"],
-	["100", "150", "215", "80", "152"],
-	["500", "354", "50", "2", "99"],
-	["3001", "4", "1", "9", "500"],
-	[ '17796',
+let sample = 	[ '17796',
 '27791',
 '30677',
 '34176',
@@ -61,28 +56,34 @@ let testData = [
 '920549',
 '946264',
 '974126',
-'987210' ]
+'987210' ];
+
+let testData = [
+	["1", "2", "3", "4", "5"],
+	["100", "150", "215", "80", "152"],
+	["500", "354", "50", "2", "99"],
+	["3001", "4", "1", "9", "500"]
 ];
 
-containsAnagrams(testData[4]);
+assert(containsAnagrams(sample) === false, 'it should handle numbers with zeros');
 
-// assert(
-// 	containsAnagrams(testData[1]) === true,
-// 	"it should identify numerical anagrams"
-// );
-// assert(
-// 	containsAnagrams(testData[0]) === false,
-// 	"it should return false when there are no anagrams."
-// );
-// assert(
-// 	divCheck(testData[2].slice().sort((a, b) => parseInt(a) - parseInt(b))) ===
-// 		true,
-// 	"it should identify numbers that divide to 177"
-// );
+assert(
+	containsAnagrams(testData[1]) === true,
+	"it should identify numerical anagrams"
+);
+assert(
+	containsAnagrams(testData[0]) === false,
+	"it should return false when there are no anagrams."
+);
+assert(
+	divCheck(testData[2].slice().sort((a, b) => parseInt(a) - parseInt(b))) ===
+		true,
+	"it should identify numbers that divide to 177"
+);
 
-// assert(divCheck(testData[1].slice().sort((a, b) => parseInt(a) - parseInt(b))) ===
-// 		false, "it should return false when no two elements divide to 177.");
+assert(divCheck(testData[1].slice().sort((a, b) => parseInt(a) - parseInt(b))) ===
+		false, "it should return false when no two elements divide to 177.");
 
-// let sum = 0;
-// testData.forEach(row => sum += checkSum(row));
-// assert(sum === 3004, "it should calculate the sum correctly");
+let sum = 0;
+testData.forEach(row => sum += checkSum(row));
+assert(sum === 3004, "it should calculate the sum correctly");
