@@ -37,3 +37,4 @@ services:
       - 6379:6379
     volumes:
       - ./data:/data
+    user: redis
