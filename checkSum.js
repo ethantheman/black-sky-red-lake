@@ -42,6 +42,7 @@ client.keysAsync('*')
 							http.get(`http://answer:3000/${sum}`, res => {
 								console.log('response: ', res.statusCode);
 								console.log('finished in: ', Date.now() - startTime, 'ms');
+								console.log('correct answer: ', sum);
 							});
 						}
 					}).catch(e => console.log('lrange error: ', e));
@@ -54,6 +55,7 @@ client.keysAsync('*')
 						http.get(`http://answer:3000/${sum}`, res => {
 							console.log('response: ', res.statusCode);
 							console.log('finished in: ', Date.now() - startTime, 'ms');
+							console.log('correct answer: ', sum);
 						});
 					}
 				}).catch(e => console.log('smembers error: ', e));
@@ -76,30 +78,36 @@ client.keysAsync('*')
 let containsAnagrams = row => {
 	// use an object to return early
 	// copy the row to avoid mutating the input
-	let copy = row.slice();
+	let copy = row.slice(), obj = {};
 	for (var i = 0; i < copy.length; i++) {
 		// sort the digits inside each number so anagrams will appear as the same number
-		// EDGE CASE: LEADING ZEROS AFTER SORTING - must sort digits from 9 to 0, not 0 to 9!
 		let key = copy[i]
 			.split("")
-			.sort((a, b) => b - a)
+			.sort((a, b) => b - a) // sort 9 to 0 to avoid leading zeros
 			.join("");
-		copy[i] = parseInt(key);
-	}
-
-	// sort the entire array so any anagrams will be adjacent
-	// and therefore identifiable in a single pass over the array
-	copy.sort((a, b) => a - b);
-
-	let candidate = copy[0];
-	for (i = 1; i < copy.length; i++) {
-		if (copy[i] === candidate) {
+		if ( obj[parseInt(key)] ) {
 			return true;
 		} else {
-			candidate = copy[i];
+			obj[parseInt(key)] = true;
 		}
+		// copy[i] = parseInt(key);
 	}
+
 	return false;
+
+	// // sort the entire array so any anagrams will be adjacent
+	// // and therefore identifiable in a single pass over the array
+	// copy.sort((a, b) => a - b);
+
+	// let candidate = copy[0];
+	// for (i = 1; i < copy.length; i++) {
+	// 	if (copy[i] === candidate) {
+	// 		return true;
+	// 	} else {
+	// 		candidate = copy[i];
+	// 	}
+	// }
+	// return false;
 };
 
 /*
@@ -111,19 +119,6 @@ let divCheck = row => {
 		// if yes, return true
 		// if element[i] * 177 > maximum, return false
 		// else i++
-	// since the row is sorted, we can use two pointers to scan the array outside-in:
-	// let a = 0,
-	// 	b = row.length - 1
-	// while (b > a) {
-	// 	if (row[b] / row[a] < 177) {
-	// 		a++;
-	// 	} else if (row[b] / row[a] > 177) {
-	// 		b--;
-	// 	} else if (row[b] / row[a] === 177) {
-	// 		return true;
-	// 	}
-	// }
-	// return false;
 	let set = {};
 	for ( var i = 0; i < row.length; i++ ) {
 		set[row[i]] = true;
